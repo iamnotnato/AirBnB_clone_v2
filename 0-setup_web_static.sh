@@ -1,23 +1,68 @@
 #!/usr/bin/env bash
-# Bash script that sets up your web servers for the deployment of web_static
+# script to install and setup nginx
+CONFIG_FILE="/etc/nginx/sites-available/default"
+HOST_NAME=$(hostname)
+MY_ID=106387
+STATIC=/data/web_static
 
-sudo apt install nginx -y
-sudo mkdir -p /data
-sudo mkdir -p /data/web_static
-sudo mkdir -p /data/web_static/releases/
-sudo mkdir -p /data/web_static/shared/
-sudo mkdir -p /data/web_static/releases/test/
-echo 
-"
-<html>
+# check if hostname is correct
+if [[ $(hostname) =~ ^$MY_ID-web-[0-9]+ ]]; then
+    echo 'hostname properly configured'
+else
+    (>&2 echo 'hostname not configured properly...')
+    (>&2 echo 'please set hostname to pattern: 106387-web-<server_id>...')
+    (>&2 echo 'Example: sudo hostnamectl set-hostname 106387-web-<insert_server_id_here>')
+fi
+
+# install nginx
+apt-get -y update
+apt-get -y install nginx
+
+# update 404 error page
+echo "Ceci n'est pas une page" > /usr/share/nginx/html/404.html
+
+# create static directories and links
+mkdir -p $STATIC/releases/test
+mkdir -p $STATIC/shared
+echo "<html>
   <head>
   </head>
   <body>
     Holberton School
   </body>
-</html>
-" > /data/web_static/releases/test/index.html
-ln -sf /data/web_static/releases/test/ /data/web_static/current
-chown -hR ubuntu:ubuntu /data/
-sed -i '51 i \\n\tlocation /hbnb_static {\n\talias /data/web_static/current;\n\t}' /etc/nginx/sites-available/default
+</html>" > $STATIC/releases/test/index.html
+ln -sfn $STATIC/releases/test $STATIC/current
+sudo chown -f -R ubuntu:ubuntu /data/
+
+# update config file to redirect
+printf %s "server {
+    listen 80;
+    listen [::]:80 default_server;
+    root   $STATIC/current;
+    index  index.html index.htm 8-index.html;
+
+    add_header X-Served-By $HOST_NAME;
+
+    location / {
+        alias $STATIC/current/;
+    }
+
+    location /redirect_me {
+        return 301 https://www.youtube.com/watch?v=QH2-TGUlwu4;
+    }
+
+    location /hbnb_static {
+        alias $STATIC/current/;
+    }
+
+    error_page 404 /404.html;
+    location /404 {
+      root /usr/share/nginx/html;
+      internal;
+    }
+}" > $CONFIG_FILE
+
+# start nginx after reloading config
+service nginx start
+# if nginx was already running restart it
 service nginx restart
