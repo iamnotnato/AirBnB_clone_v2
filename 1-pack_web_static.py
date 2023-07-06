@@ -2,8 +2,6 @@
 """
 module : 1-pack_web_static.py
 """
-
-
 from datetime import datetime
 
 from fabric.api import *
