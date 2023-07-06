@@ -4,8 +4,9 @@ module : 1-pack_web_static.py
 """
 
 
-from fabric.api import *
 from datetime import datetime
+
+from fabric.api import *
 
 
 def do_pack():
