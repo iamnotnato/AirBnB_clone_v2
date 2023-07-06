@@ -8,16 +8,15 @@ from datetime import datetime
 from os.path import exists
 
 
-env.hosts = ['107.21.42.87', '34.207.121.230']
+env.hosts = ["107.21.42.87", "34.207.121.230"]
 
 
 def do_deploy(archive_path):
-    """ distributes an archive to my web servers
-    """
+    """distributes an archive to my web servers"""
     if exists(archive_path) is False:
         return False
-    filename = archive_path.split('/')[-1]
-    no_tgz = '/data/web_static/releases/' + "{}".format(filename.split('.')[0])
+    filename = archive_path.split("/")[-1]
+    no_tgz = "/data/web_static/releases/" + "{}".format(filename.split(".")[0])
     tmp = "/tmp/" + filename
 
     try:
