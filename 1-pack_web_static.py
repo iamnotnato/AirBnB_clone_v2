@@ -15,4 +15,6 @@ def do_pack():
     if result.failed:
         return None
     else:
+        print('web_static packed:')
         return result
+        
