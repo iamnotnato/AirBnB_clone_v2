@@ -3,11 +3,12 @@
 import os.path
 from datetime import datetime
 from fabric.api import local
-import pytz
+#import pytz
+#pytz.timezone('Africa/Nairobi')
 
 def do_pack():
     """Create a tar gzipped archive of the directory web_static."""
-    dt = datetime.now(pytz.timezone('Africa/Nairobi'))
+    dt = datetime.now()
     file = "versions/web_static_{}{}{}{}{}{}.tgz".format(dt.year,
                                                          dt.month,
                                                          dt.day,
