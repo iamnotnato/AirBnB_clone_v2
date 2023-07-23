@@ -66,7 +66,8 @@ def do_deploy(archive_path):
     if res.failed:
         print('failed to clean up old release...')
         return False
-    res = run('ln -sfn /data/web_static/current/ /data/web_static/releases/{}')
+    res = run('ln -sfn /data/web_static/releases/{} /data/web_static/current'
+              .format(no_ext_archive))
     if res.failed:
         print('failed to create link to new release...')
         return False
