@@ -43,7 +43,7 @@ def do_deploy(archive_path):
         return False
     if run("rm -rf /data/web_static/current").failed is True:
         return False
-    if run("ln -sfn /data/web_static/releases/{}/ /data/web_static/current".
+    if run("ln -sfn /data/web_static/current /data/web_static/releases/{}/".
            format(name)).failed is True:
         return False
         print('\nNew Version Successfuly Deployed!\n')
