@@ -11,7 +11,6 @@ from models.amenity import Amenity
 from models.place import Place
 from models.review import Review
 from shlex import split
-from os import environ
 
 
 class HBNBCommand(cmd.Cmd):
@@ -20,31 +19,6 @@ class HBNBCommand(cmd.Cmd):
     prompt = "(hbnb) "
     all_classes = {"BaseModel", "User", "State", "City",
                    "Amenity", "Place", "Review"}
-
-    @classmethod
-    def verify_attribute(cls, attribute):
-        """verifies that an attribute is correctly formatted"""
-        if attribute[0] is attribute[-1] is '"':
-            for i, c in enumerate(attribute[1:-1]):
-                if c is '"' and attribute[i] is not '\\':
-                    return None
-                if c is " ":
-                    return None
-            return attribute.strip('"').replace('_', ' ').replace("\\\"", "\"")
-        else:
-            flag = 0
-            allowed = "0123456789.-"
-            for c in attribute:
-                if c not in allowed:
-                    return None
-                if c is '.' and flag == 1:
-                    return None
-                elif c is '.' and flag == 0:
-                    flag = 1
-            if flag == 1:
-                return float(attribute)
-            else:
-                return int(attribute)
 
     def emptyline(self):
         """Ignores empty spaces"""
@@ -69,20 +43,22 @@ class HBNBCommand(cmd.Cmd):
                 raise SyntaxError()
             my_list = line.split(" ")
             obj = eval("{}()".format(my_list[0]))
-            for attr in my_list[1:]:
-                my_att = attr.split('=')
-                try:
-                    casted = HBNBCommand.verify_attribute(my_att[1])
-                except:
-                    continue
-                if not casted:
-                    continue
-                setattr(obj, my_att[0], casted)
-            obj.save()
             print("{}".format(obj.id))
+            for num in range(1, len(my_list)):
+                my_list[num] = my_list[num].replace('=', ' ')
+                attributes = split(my_list[num])
+                attributes[1] = attributes[1].replace('_', ' ')
+                try:
+                    var = eval(attributes[1])
+                    attributes[1] = var
+                except:
+                    pass
+                if type(attributes[1]) is not tuple:
+                    setattr(obj, attributes[0], attributes[1])
+            obj.save()
         except SyntaxError:
             print("** class name missing **")
-        except NameError as e:
+        except NameError:
             print("** class doesn't exist **")
 
     def do_show(self, line):
@@ -135,8 +111,6 @@ class HBNBCommand(cmd.Cmd):
             objects = storage.all()
             key = my_list[0] + '.' + my_list[1]
             if key in objects:
-                if environ.get('HBNB_TYPE_STORAGE') == 'db':
-                    storage.delete(objects[key])
                 del objects[key]
                 storage.save()
             else:

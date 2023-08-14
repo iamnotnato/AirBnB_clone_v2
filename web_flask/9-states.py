@@ -1,36 +1,40 @@
 #!/usr/bin/python3
-"""script to start a flask app on localhost
-"""
+""" Script that runs an app with Flask framework """
+from flask import Flask, render_template
 from models import storage
-from flask import Flask
-from flask import render_template
+from models.state import State
+from models.city import City
+
+
 app = Flask(__name__)
 
 
 @app.teardown_appcontext
-def appcontext_teardown(exc=None):
-    """called on teardown of app contexts,
-        for more info on contexts visit
-        -> http://flask.pocoo.org/docs/1.0/appcontext/
-
-        Storage.close() closes the sql scoped session or reloads file
-            storage.
-    """
+def teardown_session(exception):
+    """ Teardown """
     storage.close()
 
 
-@app.route('/states', strict_slashes=False)
+@app.route('/states/', strict_slashes=False)
 @app.route('/states/<id>', strict_slashes=False)
-def conditional_templating(id=None):
-    """checking input data using templating"""
-    states = storage.all("State")
-    if id is None:
+def display_html(id=None):
+    """ Function called with /states route """
+    states = storage.all(State)
+
+    if not id:
+        dict_to_html = {value.id: value.name for value in states.values()}
+        return render_template('7-states_list.html',
+                               Table="States",
+                               items=dict_to_html)
+
+    k = "State.{}".format(id)
+    if k in states:
         return render_template('9-states.html',
-                               states=states)
-    state = states.get('State.' + id)
+                               Table="State: {}".format(states[k].name),
+                               items=states[k])
+
     return render_template('9-states.html',
-                           state=state)
+                           items=None)
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)

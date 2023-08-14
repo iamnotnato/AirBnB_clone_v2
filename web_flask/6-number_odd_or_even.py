@@ -1,53 +1,54 @@
 #!/usr/bin/python3
-"""script to start a flask app on localhost
-"""
-from flask import Flask
-from flask import render_template
+""" Script that runs an app with Flask framework """
+from flask import Flask, render_template
+
+
 app = Flask(__name__)
 
 
 @app.route('/', strict_slashes=False)
-def hello():
-    """first route"""
+def hello_hbnb():
+    """ Function called with / route """
     return 'Hello HBNB!'
 
 
 @app.route('/hbnb', strict_slashes=False)
 def hbnb():
-    """more specific routes"""
+    """ Function called with /hbnb route """
     return 'HBNB'
 
 
-@app.route('/c/<string:text>', strict_slashes=False)
-def dynamic_text(text=None):
-    """dynamic routes """
-    return "C {}".format(text.replace('_', ' '))
+@app.route('/c/<text>', strict_slashes=False)
+def c_text(text):
+    """ Function called with /c/<text> route """
+    return 'C %s' % text.replace('_', ' ')
 
 
-@app.route('/python', strict_slashes=False)
-@app.route('/python/<string:text>', strict_slashes=False)
-def python_dynamic(text='is_cool'):
-    """dynamic routes with multiple routes and defaults"""
-    return "Python {}".format(text.replace('_', ' '))
+@app.route('/python/', strict_slashes=False)
+@app.route('/python/<text>', strict_slashes=False)
+def python_text(text='is cool'):
+    """ Function called with /python/<text> route """
+    if text is not 'is cool':
+        text = text.replace('_', ' ')
+    return 'Python %s' % text
 
 
 @app.route('/number/<int:n>', strict_slashes=False)
-def only_digits_dynamic(n=None):
-    """only type specific routes"""
-    return "{} is a number".format(n)
+def number(n):
+    """ Function called with /number/<n> route """
+    return "%d is a number" % n
 
 
 @app.route('/number_template/<int:n>', strict_slashes=False)
-def first_template(n=None):
-    """first template routes"""
-    return render_template('5-number.html', n=n)
+def number_template(n):
+    """ Function called with /number_template/<n> route """
+    return render_template('5-number.html', number=n)
 
 
 @app.route('/number_odd_or_even/<int:n>', strict_slashes=False)
-def conditional_templating(n=None):
-    """checking input data using templating"""
-    return render_template('6-number_odd_or_even.html', n=n)
+def number_odd_or_even(n):
+    """ Function called with /number_template/<n> route """
+    return render_template('6-number_odd_or_even.html', number=n)
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)

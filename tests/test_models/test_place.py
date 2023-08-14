@@ -2,12 +2,10 @@
 """test for place"""
 import unittest
 import os
+from os import getenv
 from models.place import Place
 from models.base_model import BaseModel
 import pep8
-
-
-env = os.environ.get('HBNB_TYPE_STORAGE')
 
 
 class TestPlace(unittest.TestCase):
@@ -86,7 +84,7 @@ class TestPlace(unittest.TestCase):
         self.assertEqual(type(self.place.longitude), float)
         self.assertEqual(type(self.place.amenity_ids), list)
 
-    @unittest.skipIf(env == 'db', "filestorage not in use")
+    @unittest.skipIf(getenv("HBNB_TYPE_STORAGE") == 'db', 'DB')
     def test_save_Place(self):
         """test if the save works"""
         self.place.save()
