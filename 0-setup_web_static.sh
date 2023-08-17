@@ -1,68 +1,20 @@
 #!/usr/bin/env bash
-# script to install and setup nginx
-CONFIG_FILE="/etc/nginx/sites-available/default"
-HOST_NAME=$(hostname)
-MY_ID=106387
-STATIC=/data/web_static
-
-# check if hostname is correct
-if [[ $(hostname) =~ ^$MY_ID-web-[0-9]+ ]]; then
-    echo 'hostname properly configured'
-else
-    (>&2 echo 'hostname not configured properly...')
-    (>&2 echo 'please set hostname to pattern: 106387-web-<server_id>...')
-    (>&2 echo 'Example: sudo hostnamectl set-hostname 106387-web-<insert_server_id_here>')
-fi
-
-# install nginx
-apt-get -y update
-apt-get -y install nginx
-
-# update 404 error page
-echo "Ceci n'est pas une page" > /usr/share/nginx/html/404.html
-
-# create static directories and links
-mkdir -p $STATIC/releases/test
-mkdir -p $STATIC/shared
+# setup server for deployment web_static
+apt-get update -y
+apt-get upgrade -y
+apt-get install nginx -y
+mkdir -p /data/web_static
+mkdir -p /data/web_static/releases
+mkdir -p /data/web_static/shared
+mkdir -p /data/web_static/releases/test
 echo "<html>
   <head>
   </head>
   <body>
-  Holberton School
+    Holberton School
   </body>
-</html>" > $STATIC/releases/test/index.html
-ln -sfn $STATIC/releases/test $STATIC/current
-sudo chown -f -R ubuntu:ubuntu /data/
-
-# update config file to redirect
-printf %s "server {
-    listen 80;
-    listen [::]:80 default_server;
-    root   $STATIC/current;
-    index  index.html index.htm 8-index.html;
-
-    add_header X-Served-By $HOST_NAME;
-
-    location / {
-        alias $STATIC/current/;
-    }
-
-    location /redirect_me {
-        return 301 https://www.youtube.com/watch?v=QH2-TGUlwu4;
-    }
-
-    location /hbnb_static {
-        alias $STATIC/current/;
-    }
-
-    error_page 404 /404.html;
-    location /404 {
-      root /usr/share/nginx/html;
-      internal;
-    }
-}" > $CONFIG_FILE
-
-# start nginx after reloading config
-service nginx start
-# if nginx was already running restart it
+</html>" > /data/web_static/releases/test/index.html
+ln -fs /data/web_static/releases/test /data/web_static/current
+chown -R ubuntu:ubuntu /data
+sed -i '/^\tserver_name/ a\\tlocation /hbnb_static \{\n\t\talias /data/web_static/current;\n\t\}\n' /etc/nginx/sites-available/default
 service nginx restart
